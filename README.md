@@ -1,25 +1,46 @@
-
 # PCAP Analyzer – Communication Networks Final Project
 
 ## 📌 Overview
-This project provides tools to analyze network traffic captured in PCAP files and utilizes Machine Learning (ML) models to classify encrypted internet traffic. The analysis focuses on extracting critical traffic features, visualizing them, and predicting the application generating the traffic.
+This project provides tools to analyze network traffic captured in PCAP files and employs Machine Learning (ML) models to classify encrypted internet traffic. It focuses on extracting critical traffic features, visualizing them, and predicting the application generating the traffic.
 
 ## 🚀 Features
 
 ### Main Functionalities:
-- **PCAP File Analysis:** Extract key features from PCAP files (packet sizes, inter-arrival times, TCP/IP header data, HTTP packet counts, etc.).
-- **Visualization:** Graphically present various traffic characteristics using interactive graphs:
-  - Average packet size
-  - Inter-packet arrival time distribution
-  - Flow volume and size
-  - TCP flags and IP protocols distributions
-- **Traffic Classification:** Predict the source application (e.g., Chrome, Edge, Spotify, YouTube, Zoom) using Random Forest ML models:
-  - Model with Flow-based features
-  - Model without Flow-based features
-- **Interactive GUI:** Easy-to-use graphical interface to load PCAPs, visualize data, and run predictions.
+- **PCAP File Analysis:**
+  - Accepts `.pcap` and `.pcapng` files.
+  - Extracts features including:
+    - Flow size (total packets per flow)
+    - Flow volume (total bytes per flow)
+    - Average packet size
+    - Packet sizes and distribution
+    - Packet timestamps and inter-arrival times (IAT)
+    - Flow duration
+    - Flow directionality (forward vs. backward packet counts)
+    - TCP flags distribution (SYN, ACK, RST, PSH, FIN)
+    - IP protocols usage
+    - HTTP packet count (HTTP/1, HTTP/2, HTTP/3)
+
+- **Visualization:** Interactive graphical representation of extracted features, including:
+  - Average Packet Size (Bar Chart)
+  - Average Inter-Arrival Time (IAT) (Bar Chart)
+  - Packet Size Distribution (Histogram)
+  - IAT Distribution (Histogram)
+  - Flow Volume per Second (Line Graph)
+  - Flow Size vs. Volume (Scatter Plot)
+  - Flow Size per PCAP (Bar Chart)
+  - Flow Volume per PCAP (Bar Chart)
+  - Flow Direction (Forward vs. Backward packets per PCAP) (Bar Chart)
+  - IP Protocols Distribution (Bar Chart)
+  - TCP Flags Distribution (Bar Chart)
+  - HTTP Distribution (Bar Chart)
+
+- **Traffic Classification:** Application prediction using Random Forest ML models:
+  - **Flow-based Model:** Features include flow size, flow volume, packet inter-arrival times, and flow directionality ratios.
+  - **No-Flow Model:** Uses general features like packet sizes, packet timestamps, and packet throughput.
+
+- **Interactive GUI:** Built with Tkinter, enabling easy interaction for loading PCAP files, viewing detailed data frames, graphical visualizations, and executing ML predictions.
 
 ## 📂 Project Structure
-
 ```
 .
 ├── README.md
@@ -30,90 +51,100 @@ This project provides tools to analyze network traffic captured in PCAP files an
 │   ├── graph.py
 │   ├── pcap_processor.py
 │   ├── rfc_model_with_flow.py
-│   └── rtc_model_no_flow.py
+│   ├── rtc_model_no_flow.py
+│   └── models/
+│       ├── flow_based_model.pkl
+│       └── no_flow_model.pkl
 └── res/
     ├── result_figures/
     └── example_results.csv
 ```
 
-- **`src/`:** Contains the Python scripts for processing PCAP files, GUI application, and ML predictions.
-- **`res/`:** Holds generated results and figures.
+- **`models/`:** Contains serialized (`.pkl`) Random Forest ML models.
+- **`res/`:** Generated results and figures storage.
 
 ## 🛠️ Installation
 
 ### Requirements
-- Python 3.8 or newer
-- `pyshark`, `scikit-learn`, `matplotlib`, `pandas`, `numpy`, `seaborn`, `tkinter`
+- Python 3.8+
+- Dependencies: `pyshark`, `scikit-learn`, `matplotlib`, `pandas`, `numpy`, `seaborn`, `tkinter`
 
 ### Steps
-1. Clone the repository:
+1. Clone repository:
    ```sh
-   git clone <your_repository_url>
+   git clone <repository_url>
    ```
-2. Navigate to the directory:
+2. Navigate to directory:
    ```sh
-   cd your_repository_name
+   cd <repository_name>
    ```
 3. Install dependencies:
    ```sh
    pip install -r requirements.txt
    ```
 
-## 🎯 Usage
-- Run the GUI application:
-  ```sh
-  python src/main.py
-  ```
-- Load PCAP files through the interface.
-- Use built-in functionalities to visualize and analyze network traffic.
+## 🎯 Detailed GUI Usage
+
+### Buttons & Functions:
+- **Load PCAPs:** Select `.pcap` or `.pcapng` files to load and process.
+- **Show DataFrame:** Displays extracted data in a structured, interactive table format with detailed column descriptions.
+- **Show Graphs:** Opens visualization window with various selectable interactive graphs listed above.
+- **Predict without Flow:** Runs ML classification using packet sizes and timestamps.
+- **Predict with Flow:** Runs ML classification using flow-based features.
 
 ## 📊 Machine Learning Models
-### With Flow-Based Features
-- Utilizes advanced features such as flow size, flow volume, packet inter-arrival time variations.
-- Features include standard deviations of packet sizes per flow, average flow packet size, and flow directionality ratios.
 
-### Without Flow-Based Features
-- Focuses on general statistics like average packet size, burstiness of inter-arrival times, and packet throughput.
-- Does not require flow-specific information, making it useful for simpler scenarios.
+### Model Features:
+- **Scenario 1 (Flow-Based):** Attacker obtains packet sizes, timestamps, and hashes of the 4-tuple flowID.
+  - Features: Flow size, flow volume, packet inter-arrival times, flow directionality ratio.
 
-## 🖥️ Visualization Tools
-- Interactive bar charts, histograms, scatter plots, and distribution graphs.
-- Dynamic UI elements for selecting and viewing specific PCAP data characteristics.
+- **Scenario 2 (No-Flow):** Attacker obtains only packet sizes and timestamps.
+  - Features: Average packet size, average IAT, packet throughput.
 
 ## 📝 Reports and Analysis
-- Includes analysis of TCP/IP behaviors (e.g., flow control mechanisms, routing impacts).
-- Comparative visualization of apps' traffic characteristics, highlighting differences and similarities.
+Contains detailed analyses:
 
-## 🔒 Security and Privacy Analysis
-- Evaluates the ability of attackers to identify apps/sites from encrypted or anonymized traffic.
-- Provides mitigation recommendations for potential privacy leaks.
+1. **Network Performance Factors:**
+   - Discusses TCP protocol performance factors, network conditions impacting data transfer, and methods for troubleshooting common TCP-related issues.
+
+2. **Academic Papers Analysis:**
+   - *FlowPic: Encrypted Internet Traffic Classification*
+   - *Early Traffic Classification with Encrypted ClientHello*
+   - *Analyzing HTTPS Traffic to Identify OS, Browser, and Application*
+
+3. **Visualization Analysis:**
+   - Detailed examination of traffic characteristics for Chrome, Edge, Spotify, YouTube, and Zoom.
+   - Conclusions highlight patterns unique to each application, facilitating better classification accuracy.
+
+4. **ML RFC Model Implementation:**
+   - Explains implementation details of Random Forest classifiers for traffic classification.
+   - Discusses feature selection rationale for each scenario.
+   - Analyzes attacker capabilities in passive traffic classification, effectiveness of encryption obfuscation, and recommended mitigation strategies to enhance privacy.
 
 ## 📈 Results and Conclusions
-- Confusion matrices and classification accuracy clearly presented.
-- Visual summaries facilitate interpretation of model performance.
-
-## 📚 Papers Reviewed
-- Detailed analyses provided for:
-  - *FlowPic: Encrypted Internet Traffic Classification*
-  - *Early Traffic Classification with Encrypted ClientHello*
-  - *Analyzing HTTPS Traffic to Identify OS, Browser, and Application*
+Results provide information on:
+- Network performance affecting data transfer (TCP-focused).
+- Analyses and insights from visualizing recorded traffic sessions.
+- ML classification accuracy (presented through confusion matrices).
+- Effectiveness and limitations of automated encrypted traffic classification.
+- Recommendations for enhancing traffic privacy and security.
 
 ## 🚧 Troubleshooting
-- Ensure all dependencies are installed.
-- PCAP files should not be too large; consider filtering.
-- GUI application must be run from the project root directory.
+- Verify all dependencies are installed.
+- Use filtered or reasonably sized PCAP files to ensure stable analysis.
+- GUI must be run from project root.
 
 ## 📍 Authors
-- List of team members and links to GitHub and LinkedIn profiles.
+- [List team members here with GitHub/LinkedIn links]
 
 ## 📌 Submission
-- **GitHub repository:** Contains all project-related files.
-- **LinkedIn:** Project linked in profiles.
-- **Moodle submission:**
-  - Link to GitHub repo
-  - Filtered `.pcap` files (or cloud links)
-  - Python scripts for parsing PCAP files
+- **GitHub Repository:** Includes all relevant project files.
+- **LinkedIn:** Linked project profiles.
+- **Moodle Submission:**
+  - GitHub link
+  - Filtered `.pcap` files
+  - PCAP parsing Python scripts
 
 ---
 
-🌟 For further questions or support, contact the project team.
+🌟 Contact project team for further assistance or questions.
