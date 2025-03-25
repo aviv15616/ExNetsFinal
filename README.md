@@ -40,29 +40,6 @@ This project provides tools to analyze network traffic captured in PCAP files an
 
 - **Interactive GUI:** Built with Tkinter, enabling easy interaction for loading PCAP files, viewing detailed data frames, graphical visualizations, and executing ML predictions.
 
-## 📂 Project Structure
-```
-.
-├── README.md
-├── src/
-│   ├── main.py
-│   ├── pcap_gui.py
-│   ├── data_frame.py
-│   ├── graph.py
-│   ├── pcap_processor.py
-│   ├── rfc_model_with_flow.py
-│   ├── rtc_model_no_flow.py
-│   └── models/
-│       ├── flow_based_model.pkl
-│       └── no_flow_model.pkl
-└── res/
-    ├── result_figures/
-    └── example_results.csv
-```
-
-- **`models/`:** Contains serialized (`.pkl`) Random Forest ML models.
-- **`res/`:** Generated results and figures storage.
-
 ## 🛠️ Installation
 
 ### Requirements
@@ -101,50 +78,13 @@ This project provides tools to analyze network traffic captured in PCAP files an
 - **Scenario 2 (No-Flow):** Attacker obtains only packet sizes and timestamps.
   - Features: Average packet size, average IAT, packet throughput.
 
-## 📝 Reports and Analysis
-Contains detailed analyses:
+## 📍 Authors:
+- Aviv Neeman (owner of this github account)
+- Noa Shalom
+- Gil Aharon
+- Amnon Pozailov
 
-1. **Network Performance Factors:**
-   - Discusses TCP protocol performance factors, network conditions impacting data transfer, and methods for troubleshooting common TCP-related issues.
-
-2. **Academic Papers Analysis:**
-   - *FlowPic: Encrypted Internet Traffic Classification*
-   - *Early Traffic Classification with Encrypted ClientHello*
-   - *Analyzing HTTPS Traffic to Identify OS, Browser, and Application*
-
-3. **Visualization Analysis:**
-   - Detailed examination of traffic characteristics for Chrome, Edge, Spotify, YouTube, and Zoom.
-   - Conclusions highlight patterns unique to each application, facilitating better classification accuracy.
-
-4. **ML RFC Model Implementation:**
-   - Explains implementation details of Random Forest classifiers for traffic classification.
-   - Discusses feature selection rationale for each scenario.
-   - Analyzes attacker capabilities in passive traffic classification, effectiveness of encryption obfuscation, and recommended mitigation strategies to enhance privacy.
-
-## 📈 Results and Conclusions
-Results provide information on:
-- Network performance affecting data transfer (TCP-focused).
-- Analyses and insights from visualizing recorded traffic sessions.
-- ML classification accuracy (presented through confusion matrices).
-- Effectiveness and limitations of automated encrypted traffic classification.
-- Recommendations for enhancing traffic privacy and security.
-
-## 🚧 Troubleshooting
-- Verify all dependencies are installed.
-- Use filtered or reasonably sized PCAP files to ensure stable analysis.
-- GUI must be run from project root.
-
-## 📍 Authors
-- [List team members here with GitHub/LinkedIn links]
-
-## 📌 Submission
-- **GitHub Repository:** Includes all relevant project files.
-- **LinkedIn:** Linked project profiles.
-- **Moodle Submission:**
-  - GitHub link
-  - Filtered `.pcap` files
-  - PCAP parsing Python scripts
-
----
-
-🌟 Contact project team for further assistance or questions.
+## 📌 Links:
+- Training set for the ML models, consisting 20 10~30 seconds pcap recordings of each traffic type (chrome,edge,youtube,spotify,zoom)
+- 7 recordings of each traffic type (all 3 minute long to ensure a valid comparison) + sslkey file to allow HTTP analysis.
+[Drive link](https://drive.google.com/drive/folders/1_HTYFmh8jFF9BU6gwGZcF5H-YbXrWvgu?usp=drive_link)
