@@ -16,11 +16,15 @@ class DataFrameWindow(tk.Toplevel):
             "Flow duration (seconds)": "Total duration of the capture in seconds.",
             "Avg Packet size (bytes)": "Average packet size in bytes.",
             "Avg Packet IAT (seconds)": "Average inter-arrival time between packets.",
+            "CV IAT": "Coefficient of Variation (Std dev / Avg) of Inter-Arrival Times.",
+            "Unique Flows": "Count of unique flows (based on Src IP, Dst IP, Src port, Dst port).",
             "Flow Directionality Ratio": "Ratio of forward to backward packet count in the PCAP.",
             "Http Count": "Number of HTTP packets categorized by version.",
             "Tcp Flags": "Count of TCP flags (SYN, ACK, RST, PSH, FIN).",
             "Ip protocols": "Count of different IP protocols used in packets.",
         }
+
+        self.tree = ttk.Treeview(self, columns=list(self.column_descriptions.keys()), show='headings')
 
         self.tree = ttk.Treeview(self, columns=list(self.column_descriptions.keys()), show='headings')
         self.sort_order = {}  # Track sorting order for each column
@@ -90,7 +94,7 @@ class DataFrameWindow(tk.Toplevel):
     def sort_column(self, col):
         reverse = self.sort_order.get(col, False)
         try:
-            if col in ["Flow Directionality Ratio", "CV_IAT", "CV_PS", "TCP %", "UDP %"]:
+            if col in ["CV_IAT", "CV_PS", "TCP %", "UDP %"]:
                 self.data.sort(key=lambda x: float(x[col].replace('%', '')) if isinstance(x[col], str) else 0, reverse=reverse)
             else:
                 self.data.sort(

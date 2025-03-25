@@ -1,3 +1,4 @@
+import numpy as np
 import pyshark
 from collections import Counter
 import os
@@ -39,7 +40,7 @@ class PcapProcessor:
         except Exception:
             return False
 
-        # ⬇⬇⬇ אנחנו לא נוגעים בקוד החישובים המקוריים ⬇⬇⬇
+
         packet_count = 0
         total_size = 0
         start_time = None
@@ -161,13 +162,25 @@ class PcapProcessor:
         total_backward = sum(flow["backward"] for flow in flows.values())
         total_forward = sum(flow["forward"] for flow in flows.values())
         flow_directionality_ratio = round(total_forward / total_backward, 3) if total_backward > 0 else total_forward
-        pcap_entry={
+        avg_packet_iat = duration / packet_count if packet_count else 0
+        std_dev_iat = np.std(iat_list) if iat_list else 0
+        cv_iat = (std_dev_iat / avg_packet_iat) if avg_packet_iat else 0
+
+        # Calculate unique flows based solely on src/dst IP and ports
+        unique_flows_set = set()
+        for flow_key in flows:
+            src_ip, dst_ip, src_port, dst_port, _ = flow_key
+            unique_flows_set.add((src_ip, dst_ip, src_port, dst_port))
+        unique_flows_count = len(unique_flows_set)
+        pcap_entry = {
             "Pcap file": file_name,
             "Flow size": packet_count,
             "Flow Volume (bytes)": total_size,
             "Flow duration (seconds)": round(duration, 2),
             "Avg Packet size (bytes)": round(avg_packet_size, 2),
             "Avg Packet IAT (seconds)": round(avg_packet_iat, 6),
+            "CV IAT": round(cv_iat, 6),  # <-- Newly added CV IAT column
+            "Unique Flows": unique_flows_count,  # <-- Newly added Unique Flows column
             "Inter-Packet Arrival Times": iat_list,
             "Packet Timestamps": timestamps_list,
             "Packet Sizes": packet_sizes,

@@ -33,6 +33,12 @@ class Graph(tk.Toplevel):
         button_frame = tk.Frame(self)
         button_frame.pack(pady=10)
 
+        button_frame_row1 = tk.Frame(button_frame)
+        button_frame_row1.pack()
+
+        button_frame_row2 = tk.Frame(button_frame)
+        button_frame_row2.pack()
+
         buttons = [
             ("Avg Packet Size", self.plot_avg_packet_size),
             ("Avg IAT", self.plot_avg_iat),
@@ -42,15 +48,22 @@ class Graph(tk.Toplevel):
             ("Flow Size vs. Volume", self.plot_flow_size_vs_volume),
             ("Flow Size Per PCAP", self.plot_flow_size_over_pcap),
             ("Flow Volume Per PCAP", self.plot_flow_volume_over_pcap),
+        ]
+
+        extra_buttons = [
             ("Flow Direction", self.plot_flow_dir),
             ("IP Protocols Distribution", self.plot_ip_protocols),
             ("TCP Flags Distribution", self.plot_tcp_flags),
             ("HTTP Distribution", self.plot_http_distribution),
-
+            ("CV Count", self.plot_cv_count),
+            ("Flow Count", self.plot_flow_count),
         ]
-
+        # First row of buttons
         for text, command in buttons:
-            tk.Button(button_frame, text=text, command=command).pack(side=tk.LEFT, padx=5)
+            tk.Button(button_frame_row1, text=text, command=command).pack(side=tk.LEFT, padx=5)
+        # Second row of buttons (extra_buttons)
+        for text, command in extra_buttons:
+            tk.Button(button_frame_row2, text=text, command=command).pack(side=tk.LEFT, padx=5)
 
         self.graph_frame = tk.Frame(self)
         self.graph_frame.pack(expand=True, fill=tk.BOTH)
@@ -397,6 +410,53 @@ class Graph(tk.Toplevel):
             cb = tk.Checkbutton(self.checkbox_frame, text=label, variable=var, command=toggle_visibility, bg="white")
             cb.pack(side=tk.LEFT, padx=5)
             self.pcap_visibility[label] = var
+
+    def plot_flow_count(self):
+        """Plots the number of flows per PCAP file using plot_bar_chart."""
+        pcap_files = [entry["Pcap file"] for entry in self.data]
+        flow_counts = [entry.get("Flow count", 0) for entry in self.data]  # Get raw values
+
+        print("DEBUG: Flow Counts:", flow_counts)  # Debugging print statement
+
+        if not any(flow_counts):  # If all values are zero, display a message
+            self.display_no_data_message("No Flow Data Available", "Flow Count per PCAP")
+            return
+
+        self.plot_bar_chart(
+            x_labels=pcap_files,
+            values=flow_counts,
+            ylabel="Flow Count",
+            title="Flow Count per PCAP"
+        )
+
+    def plot_cv_count(self):
+        """Plots the Coefficient of Variation (CV) per PCAP file using plot_bar_chart."""
+        pcap_files = [entry["Pcap file"] for entry in self.data]
+        cv_counts = [max(0, entry.get("burstiness_factor", 0)) for entry in self.data]  # Ensure non-negative
+
+        if not any(cv_counts):  # If all values are zero, display a message
+            self.display_no_data_message("No CV Data Available", "CV Count per PCAP")
+            return
+
+        self.plot_bar_chart(
+            x_labels=pcap_files,
+            values=cv_counts,
+            ylabel="Coefficient of Variation (CV)",
+            title="CV Count per PCAP"
+        )
+
+    def display_no_data_message(self, message, title):
+        """Displays a no-data message when there is no data to plot."""
+        if self.canvas:
+            self.canvas.get_tk_widget().destroy()
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, message, fontsize=12, ha='center', va='center')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_title(title)
+
+        self.display_graph(fig)
 
     def add_draggable_legend(self, ax, pcap_colors=None, unique_pcaps=None):
         if pcap_colors and unique_pcaps:
