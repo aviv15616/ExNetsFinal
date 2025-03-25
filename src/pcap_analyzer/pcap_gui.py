@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk, Toplevel, Label
+from tkinter import filedialog, messagebox, ttk, Label
 import os
 import threading
 import matplotlib.pyplot as plt
@@ -9,8 +9,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from data_frame import DataFrameWindow
 from pcap_processor import PcapProcessor
 from graph import Graph
-from rfc_ml_models.no_flow.rtc_model_no_flow import predict_traffic as predict_no_flow
-from rfc_ml_models.with_flow.rfc_model_with_flow import predict_traffic as predict_with_flow
+from src.rfc_ml_models.no_flow.rtc_model_no_flow import predict_traffic as predict_no_flow
+from src.rfc_ml_models.with_flow.rfc_model_with_flow import predict_traffic as predict_with_flow
 
 class PcapGUI:
     def __init__(self, root):

@@ -1,4 +1,3 @@
-import os
 import re
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
@@ -6,7 +5,7 @@ from sklearn.metrics import accuracy_score
 import pyshark
 import numpy as np
 import asyncio
-from rfc_ml_models.with_flow.rfc_model_with_flow import print_confusion_matrix
+from src.rfc_ml_models.with_flow.rfc_model_with_flow import print_confusion_matrix
 import pickle
 import os
 import pandas as pd
