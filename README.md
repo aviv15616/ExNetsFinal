@@ -85,6 +85,6 @@ This project provides tools to analyze network traffic captured in PCAP files an
 - Amnon Pozailov
 
 ## 📌 Links:
-- Training set for the ML models, consisting 20 10~30 seconds pcap recordings of each traffic type (chrome,edge,youtube,spotify,zoom)
-- 7 recordings of each traffic type (all 3 minute long to ensure a valid comparison) + sslkey file to allow HTTP analysis.
+- Training set used for the ML models, consisting 25 10~30 seconds pcap recordings of each traffic type (chrome,edge,youtube,spotify,zoom) only 15 were used to train it.
+- 7 recordings of each traffic type (all 3 minute long to ensure a valid comparison, and to make sure we dont miss patterns) + sslkey file to allow HTTP analysis.
 [Drive link](https://drive.google.com/drive/folders/1_HTYFmh8jFF9BU6gwGZcF5H-YbXrWvgu?usp=drive_link)
