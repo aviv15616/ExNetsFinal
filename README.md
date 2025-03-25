@@ -79,7 +79,7 @@ This project provides tools to analyze network traffic captured in PCAP files an
   - Features: Average packet size, average IAT, packet throughput.
 
 ## 📍 Authors:
-- Aviv Neeman (owner of this github account)
+- Aviv Neeman (owner of this github account) anksilae@gmail.com
 - Noa Shalom
 - Gil Aharon
 - Amnon Pozailov
