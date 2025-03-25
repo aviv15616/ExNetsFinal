@@ -8,20 +8,16 @@ import pyshark
 import re
 import matplotlib.pyplot as plt
 import seaborn as sns
-
 from collections import Counter, defaultdict
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.preprocessing import MinMaxScaler
-
 # Get the absolute path of the current script
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 # Define paths for model, scaler, and CSV
 model_path = os.path.join(BASE_DIR, "model_with_flow.pkl")
 scaler_path = os.path.join(BASE_DIR, "scaler_with_flow.pkl")
-
 # --------------------------------------------------------------------
 FEATURE_SELECTION = [
     # Packet stats
@@ -192,7 +188,6 @@ def build_features_for_each_pcap(csv_file):
 
     return pd.DataFrame(rows)
 
-
 def main(csv_file=os.path.join(os.getcwd(), "data_set", "pcap_features.csv")):
     """
     Train a RandomForest model on the CSV, then save the trained model & scaler.
@@ -254,7 +249,6 @@ def main(csv_file=os.path.join(os.getcwd(), "data_set", "pcap_features.csv")):
         pickle.dump(best_rfc, model_file)
         pickle.dump(scaler, scaler_file)
     print("✅ Model and Scaler saved.")
-
 
 def extract_features_from_pcap(pcap_file):
     """Extracts advanced + flow-based features from a PCAP file using Pyshark inside a new event loop."""
@@ -341,8 +335,6 @@ def extract_features_from_pcap(pcap_file):
     df = pd.DataFrame([selected_values])
     return df if not df.empty else None
 
-
-
 def predict_traffic(files):
     """Loads model & scaler, extracts features for each file, and returns predicted app_names."""
     if not os.path.exists(model_path) or not os.path.exists(scaler_path):
@@ -366,7 +358,6 @@ def predict_traffic(files):
         results.append(predicted_label)
 
     return results
-
 
 ############################
 #       SCRIPT ENTRY

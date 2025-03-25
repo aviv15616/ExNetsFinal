@@ -1,29 +1,22 @@
 import os
-import pickle
-import pandas as pd
-import numpy as np
-import asyncio
-import hashlib
-import pyshark
 import re
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-from collections import Counter
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix
-from sklearn.preprocessing import MinMaxScaler
-
+from sklearn.metrics import accuracy_score
+import pyshark
+import numpy as np
+import asyncio
 from rfc_ml_models.with_flow.rfc_model_with_flow import print_confusion_matrix
+import pickle
+import os
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 
 # Get the absolute path of the current script
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 # Define paths for model, scaler, and CSV
 model_path = os.path.join(BASE_DIR, "model_no_flow.pkl")
 scaler_path = os.path.join(BASE_DIR, "scaler_no_flow.pkl")
-
 ########################################################################
 # ✅ FEATURE SELECTION (Expanded for better classification)
 ########################################################################
@@ -40,7 +33,6 @@ FEATURE_SELECTION = [
     "std_ps_avg_ps_ratio"  # Std Dev of PS / Mean PS
 ]
 
-
 ############################
 #       HELPER FUNCTIONS
 ############################
@@ -54,7 +46,6 @@ def compute_burstiness(timestamps):
     std_iat = np.std(iats, ddof=1)
     return std_iat / mean_iat if mean_iat != 0 else 0
 
-
 def compute_iat_stats(timestamps):
     """Computes min, avg, max of Inter-Arrival Times (IAT)."""
     if len(timestamps) < 2:
@@ -62,13 +53,11 @@ def compute_iat_stats(timestamps):
     iats = np.diff(sorted(timestamps))
     return min(iats), np.mean(iats), max(iats)
 
-
 def compute_ps_skewness_kurtosis(packet_sizes):
     """Computes skewness and kurtosis for packet size distribution."""
     if len(packet_sizes) < 3:
         return 0.0, 0.0
     return float(pd.Series(packet_sizes).skew()), float(pd.Series(packet_sizes).kurtosis())
-
 
 def compute_std_avg_ratio(packet_sizes):
     """Computes std(packet_sizes) / avg(packet_sizes)."""
@@ -77,12 +66,6 @@ def compute_std_avg_ratio(packet_sizes):
     avg_ps = np.mean(packet_sizes)
     std_ps = np.std(packet_sizes, ddof=1)
     return std_ps / avg_ps if avg_ps != 0 else 0.0
-
-import pyshark
-import numpy as np
-
-import asyncio
-
 
 def extract_features_from_pcap(pcap_file):
     """ Extracts the selected features from a single PCAP for inference. """
@@ -149,7 +132,6 @@ def extract_features_from_pcap(pcap_file):
 
     return pd.DataFrame([selected_vals])
 
-
 ############################
 #   BUILD FEATURES (TRAINING)
 ############################
@@ -164,10 +146,6 @@ def extract_app_name(filename):
     """Extracts the application type (e.g., 'zoom', 'youtube') from the filename."""
     match = re.match(r"([a-zA-Z]+)", filename)
     return match.group(1) if match else "unknown"
-import pickle
-import os
-import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 
 def predict_traffic(files):
     """Loads model & scaler, extracts features for each file, and returns predicted app names."""
@@ -194,8 +172,6 @@ def predict_traffic(files):
         results.append(pred_label)
 
     return results
-
-
 
 def build_features_for_each_pcap(csv_file):
     """
@@ -250,7 +226,6 @@ def build_features_for_each_pcap(csv_file):
 
     return pd.DataFrame(rows)
 
-
 def main(csv_file=os.path.join(os.getcwd(), "..", "..", "data_set", "pcap_features.csv")):
     """Train a RandomForest model on the CSV with optimized hyperparameters."""
     df_features = build_features_for_each_pcap(csv_file)
@@ -304,7 +279,6 @@ def main(csv_file=os.path.join(os.getcwd(), "..", "..", "data_set", "pcap_featur
         pickle.dump(scaler, scaler_file)
 
     print("✅ Model and Scaler saved.")
-
 
 if __name__ == "__main__":
     main()

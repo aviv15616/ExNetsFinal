@@ -2,12 +2,10 @@ import pyshark
 from collections import Counter
 import os
 import asyncio
-import hashlib  # נדרש כדי לחשב hash
-import numpy as np
-import pandas as pd  # נדרש כדי לשמור ל-CSV
+import hashlib
+import pandas as pd
 import tkinter as tk
 from tkinter import messagebox
-
 
 class PcapProcessor:
     def __init__(self, sample_mode=False):
@@ -24,7 +22,6 @@ class PcapProcessor:
         flow_string = f"{src_ip}-{dst_ip}-{src_port}-{dst_port}"
         flow_hash=hashlib.md5(flow_string.encode()).hexdigest()
         return int(flow_hash[:8], 16)
-
 
     def process_pcap(self, file_path):
         file_name = os.path.basename(file_path)

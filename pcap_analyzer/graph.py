@@ -216,7 +216,6 @@ class Graph(tk.Toplevel):
 
         self.display_graph(fig)
 
-
     def plot_flow_size_over_pcap(self):
         """ Displays the flow size per PCAP file. """
         self.plot_bar_chart(
@@ -330,8 +329,6 @@ class Graph(tk.Toplevel):
 
     def plot_http_distribution(self):
         self.plot_category_graph("Http Count", "HTTP Distribution")
-
-
 
     def plot_bytes_per_second(self):
         """Plots bytes transferred per second for each PCAP file over time with unique colors and toggleable checkboxes."""
@@ -580,6 +577,7 @@ class Graph(tk.Toplevel):
         self.canvas = FigureCanvasTkAgg(fig, master=self.graph_frame)
         self.canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
         self.canvas.draw()
+
     def create_control_frame(self, title, check_options=None, check_callback=None, radio_options=None,
                              radio_callback=None):
         """Creates a Tkinter frame below the graph with checkboxes and radio buttons (if provided)."""

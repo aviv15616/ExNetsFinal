@@ -4,17 +4,13 @@ import os
 import threading
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import confusion_matrix
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
 from data_frame import DataFrameWindow
 from pcap_processor import PcapProcessor
 from graph import Graph
-
-# Import your two model prediction functions
 from rfc_ml_models.no_flow.rtc_model_no_flow import predict_traffic as predict_no_flow
 from rfc_ml_models.with_flow.rfc_model_with_flow import predict_traffic as predict_with_flow
-
 
 class PcapGUI:
     def __init__(self, root):
