@@ -1,7 +1,5 @@
 import colorsys
 import tkinter as tk
-
-
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from collections import Counter
 import matplotlib.pyplot as plt
@@ -19,12 +17,12 @@ class Graph(tk.Toplevel):
 
         self.color_map = {
             "youtube": "#d62728",  # 🔴 Red
-            "zoom": "#1f77b4",  # 🔵 Blue
-            "chrome": "#bcbd22",  # 🟡 Yellow
+            "zoom": "#1f77b4",     # 🔵 Blue
+            "chrome": "#bcbd22",   # 🟡 Yellow
             "firefox": "#ff7f0e",  # 🟠 Orange
             "spotify": "#2ca02c",  # 🟢 Green
-            "edge": "#e377c2",  # 💗 Pink
-            "default": "#BDBDBD"  # Neutral gray for unknown categories
+            "edge": "#e377c2",     # 💗 Pink
+            "default": "#BDBDBD"   # Neutral gray for unknown categories
         }
 
         self.data = data
@@ -42,8 +40,6 @@ class Graph(tk.Toplevel):
         buttons = [
             ("Avg Packet Size", self.plot_avg_packet_size),
             ("Avg IAT", self.plot_avg_iat),
-            ("Packet Size Distribution", self.plot_packet_size_distribution),
-            ("IAT Distribution", self.plot_iat_histogram),
             ("Flow Volume Per Sec", self.plot_bytes_per_second),
             ("Flow Size vs. Volume", self.plot_flow_size_vs_volume),
             ("Flow Size Per PCAP", self.plot_flow_size_over_pcap),
@@ -55,12 +51,14 @@ class Graph(tk.Toplevel):
             ("IP Protocols Distribution", self.plot_ip_protocols),
             ("TCP Flags Distribution", self.plot_tcp_flags),
             ("HTTP Distribution", self.plot_http_distribution),
-            ("CV Count", self.plot_cv_count),
-            ("Flow Count", self.plot_flow_count),
+            # Replaced old references with new "CV IAT" & "Unique Flows"
+            ("CV IAT", self.plot_cv_iat),
+            ("Unique Flows", self.plot_unique_flows),
         ]
         # First row of buttons
         for text, command in buttons:
             tk.Button(button_frame_row1, text=text, command=command).pack(side=tk.LEFT, padx=5)
+
         # Second row of buttons (extra_buttons)
         for text, command in extra_buttons:
             tk.Button(button_frame_row2, text=text, command=command).pack(side=tk.LEFT, padx=5)
@@ -69,7 +67,7 @@ class Graph(tk.Toplevel):
         self.graph_frame.pack(expand=True, fill=tk.BOTH)
 
     # ==============================
-    # ✅ PLOT FUNCTIONS (FULLY INTEGRATED)
+    # Existing Plot Functions
     # ==============================
 
     def plot_tcp_flags(self):
@@ -92,106 +90,16 @@ class Graph(tk.Toplevel):
             "Average IAT"
         )
 
-    def plot_iat_histogram(self):
-        """ Displays a histogram of inter-arrival times per PCAP file with dynamically adjusted x-axis. """
-        if self.canvas:
-            self.canvas.get_tk_widget().destroy()
+    import numpy as np
+    import matplotlib.pyplot as plt
 
-        fig, ax = plt.subplots(figsize=(12, 6))  # Increased figure width
+    import numpy as np
+    import matplotlib.pyplot as plt
 
-        iat_data_per_pcap = {entry["Pcap file"]: entry.get("Inter-Packet Arrival Times", []) for entry in self.data}
-        pcap_files = list(iat_data_per_pcap.keys())
 
-        selected_pcap = next((pcap for pcap, iat in iat_data_per_pcap.items() if iat),
-                             pcap_files[0] if pcap_files else None)
-
-        def update_histogram():
-            """ Updates the histogram dynamically based on the selected PCAP file. """
-            ax.clear()
-            pcap_name = self.radio_var.get()
-            iat_data = iat_data_per_pcap.get(pcap_name, [])
-
-            if not iat_data:
-                ax.text(0.5, 0.5, f"No IAT Data for {pcap_name}", fontsize=12, ha='center', va='center')
-            else:
-                # Dynamically set bins to zoom in based on data distribution
-                min_iat, max_iat = min(iat_data), max(iat_data)
-                bin_count = 50 if max_iat - min_iat < 0.1 else 30  # More bins for smaller values
-                bins = np.linspace(min_iat, max_iat, bin_count)
-
-                ax.hist(iat_data, bins=bins, color="royalblue", edgecolor="black", alpha=0.7)
-                ax.set_xlabel("Inter-Packet Arrival Time (seconds)")
-                ax.set_ylabel("Frequency")
-                ax.set_title(f"IAT Histogram for {pcap_name}")
-
-                ax.set_xlim(min_iat, max_iat)  # Zoom into the data range
-
-            fig.canvas.draw_idle()
-
-        self.display_graph(fig)
-
-        # ✅ Ensure the control frame exists before setting `self.radio_var`
-        self.create_control_frame(
-            title="Select PCAP for IAT Histogram",
-            radio_options=pcap_files,
-            radio_callback=update_histogram
-        )
-
-        if selected_pcap:
-            self.radio_var.set(selected_pcap)
-            update_histogram()
-
-    def plot_packet_size_distribution(self):
-        """ Displays a histogram of packet sizes per PCAP file with dynamically adjusted x-axis. """
-        if self.canvas:
-            self.canvas.get_tk_widget().destroy()
-
-        fig, ax = plt.subplots(figsize=(12, 6))  # Increased figure width
-
-        packet_sizes_per_pcap = {entry["Pcap file"]: entry.get("Packet Sizes", []) for entry in self.data}
-        pcap_files = list(packet_sizes_per_pcap.keys())
-
-        selected_pcap = next((pcap for pcap, sizes in packet_sizes_per_pcap.items() if sizes),
-                             pcap_files[0] if pcap_files else None)
-
-        def update_histogram():
-            """ Updates the histogram dynamically based on the selected PCAP file. """
-            ax.clear()
-            pcap_name = self.radio_var.get()
-            sizes = packet_sizes_per_pcap.get(pcap_name, [])
-
-            if not sizes:
-                ax.text(0.5, 0.5, f"No Packet Size Data for {pcap_name}", fontsize=12, ha='center', va='center')
-            else:
-                min_size, max_size = min(sizes), max(sizes)
-                bin_count = 50 if max_size - min_size < 500 else 30  # More bins for smaller packet sizes
-                bins = np.linspace(min_size, max_size, bin_count)
-
-                ax.hist(sizes, bins=bins, color="royalblue", edgecolor="black", alpha=0.7)
-                ax.set_xlabel("Packet Size (Bytes)")
-                ax.set_ylabel("Packet Count")
-                ax.set_title(f"Packet Size Distribution for {pcap_name}")
-
-                ax.set_xlim(min_size, max_size)  # Zoom into the packet size range
-
-            fig.canvas.draw_idle()
-
-        self.display_graph(fig)
-
-        # ✅ Ensure the control frame exists before setting `self.radio_var`
-        self.create_control_frame(
-            title="Select PCAP for Packet Size Histogram",
-            radio_options=pcap_files,
-            radio_callback=update_histogram
-        )
-
-        if selected_pcap:
-            self.radio_var.set(selected_pcap)
-            update_histogram()
 
     def plot_flow_size_vs_volume(self):
         """ Scatter plot of flow size vs. flow volume with a draggable legend. """
-        # ✅ Destroy the existing control frame before displaying a new graph
         if hasattr(self, "checkbox_frame") and self.checkbox_frame:
             self.checkbox_frame.destroy()
             self.checkbox_frame = None
@@ -202,7 +110,7 @@ class Graph(tk.Toplevel):
         flow_volumes = [entry.get("Flow Volume (bytes)", 0) for entry in self.data]
         labels = [entry["Pcap file"] for entry in self.data]
 
-        # Assign colors based on self.color_map
+        # Assign colors
         pcap_colors = {}
         for pcap in set(labels):
             point_color = "gray"  # Default color
@@ -212,20 +120,18 @@ class Graph(tk.Toplevel):
                     break
             pcap_colors[pcap] = point_color
 
-        # ✅ Scatter plot with labeled points
         scatter_points = []
         for size, volume, pcap_file in zip(flow_sizes, flow_volumes, labels):
             point = ax.scatter(size, volume, color=pcap_colors[pcap_file], edgecolors='black', alpha=0.7,
                                label=pcap_file)
-            scatter_points.append(point)  # ✅ Store points for legend
+            scatter_points.append(point)
 
         ax.set_xlabel("Flow Size (Packets)")
         ax.set_ylabel("Flow Volume (Bytes)")
         ax.set_title("Flow Size vs. Flow Volume")
 
-        # ✅ Create legend based on stored scatter points
         legend = ax.legend(loc="upper right", frameon=True)
-        legend.set_draggable(True)  # ✅ Allow user to move the legend
+        legend.set_draggable(True)
 
         self.display_graph(fig)
 
@@ -285,7 +191,6 @@ class Graph(tk.Toplevel):
             x = np.arange(len(pcap_files))
             width = 0.3
 
-            # ✅ Store individual bars inside lists for correct toggling
             bars_forward = ax.bar(x - width / 2, forward_counts, width=width, label="Forward Packets",
                                   color="royalblue", edgecolor="black")
             bars_backward = ax.bar(x + width / 2, backward_counts, width=width, label="Backward Packets",
@@ -303,25 +208,23 @@ class Graph(tk.Toplevel):
 
         self.display_graph(fig)
 
-        # ✅ Store bars in a dictionary for reference
         self.bar_references = {
             "Forward": bars_forward,
             "Backward": bars_backward,
         }
 
-        # ✅ Callback function for toggling visibility
         def toggle_visibility(_=None):
             """Toggle visibility of Forward/Backward bars and individual PCAP bars."""
             forward_visible = self.check_vars["Forward"].get()
             backward_visible = self.check_vars["Backward"].get()
 
-            # ✅ Toggle Forward and Backward bars visibility
+            # Forward/Backward overall toggles
             for bar in bars_forward:
                 bar.set_visible(forward_visible)
             for bar in bars_backward:
                 bar.set_visible(backward_visible)
 
-            # ✅ Toggle PCAP-specific bars
+            # Individual PCAP toggles
             for pcap, var in self.check_vars.items():
                 if pcap in pcap_files:
                     index = pcap_files.index(pcap)
@@ -330,14 +233,11 @@ class Graph(tk.Toplevel):
 
             fig.canvas.draw_idle()
 
-        # ✅ Create UI using `create_control_frame`
         self.create_control_frame(
             title="Flow Direction Controls",
             check_options=["Forward", "Backward"] + pcap_files,
             check_callback=toggle_visibility
         )
-
-        # ✅ Ensure visibility is correctly set at the start
         toggle_visibility()
 
     def plot_http_distribution(self):
@@ -356,7 +256,7 @@ class Graph(tk.Toplevel):
 
         unique_pcaps = sorted(set(entry["Pcap file"] for entry in self.data))
 
-        # ✅ Ensure **no color repetition** by using `tab20` + dynamically generated colors.
+        # Distinct color map
         color_map = get_distinct_color_map(unique_pcaps)
 
         for entry in self.data:
@@ -375,8 +275,7 @@ class Graph(tk.Toplevel):
             bytes_per_second_per_pcap[pcap_file] = (bins[:-1], byte_counts)
 
         for i, (pcap_file, (time_bins, byte_counts)) in enumerate(bytes_per_second_per_pcap.items()):
-            line_color = color_map.get(pcap_file, "gray")  # ✅ Assign **unique** color
-
+            line_color = color_map.get(pcap_file, "gray")
             line, = ax.plot(time_bins, byte_counts, marker='o', linestyle='-', label=pcap_file, color=line_color)
             pcap_lines[pcap_file] = line
 
@@ -390,7 +289,6 @@ class Graph(tk.Toplevel):
 
         self.display_graph(fig)
 
-        # ✅ Tkinter Checkbutton Frame BELOW the graph
         self.checkbox_frame = tk.Frame(self.graph_frame, bg="white", relief=tk.RIDGE, bd=2)
         self.checkbox_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=5)
 
@@ -411,39 +309,46 @@ class Graph(tk.Toplevel):
             cb.pack(side=tk.LEFT, padx=5)
             self.pcap_visibility[label] = var
 
-    def plot_flow_count(self):
-        """Plots the number of flows per PCAP file using plot_bar_chart."""
+    # =====================================
+    # NEW FUNCTIONS FOR UNIQUE FLOWS & CV IAT
+    # =====================================
+    def plot_unique_flows(self):
+        """Plots the number of unique flows per PCAP file using a bar chart."""
         pcap_files = [entry["Pcap file"] for entry in self.data]
-        flow_counts = [entry.get("Flow count", 0) for entry in self.data]  # Get raw values
+        # "Unique Flows" is already in each pcap entry
+        unique_flows_counts = [entry.get("Unique Flows", 0) for entry in self.data]
 
-        print("DEBUG: Flow Counts:", flow_counts)  # Debugging print statement
-
-        if not any(flow_counts):  # If all values are zero, display a message
-            self.display_no_data_message("No Flow Data Available", "Flow Count per PCAP")
+        if not any(unique_flows_counts):
+            self.display_no_data_message("No Unique Flow Data Available", "Unique Flows per PCAP")
             return
 
         self.plot_bar_chart(
             x_labels=pcap_files,
-            values=flow_counts,
-            ylabel="Flow Count",
-            title="Flow Count per PCAP"
+            values=unique_flows_counts,
+            ylabel="Unique Flows",
+            title="Unique Flows per PCAP"
         )
 
-    def plot_cv_count(self):
-        """Plots the Coefficient of Variation (CV) per PCAP file using plot_bar_chart."""
+    def plot_cv_iat(self):
+        """Plots the Coefficient of Variation (CV IAT) per PCAP file using a bar chart."""
         pcap_files = [entry["Pcap file"] for entry in self.data]
-        cv_counts = [max(0, entry.get("burstiness_factor", 0)) for entry in self.data]  # Ensure non-negative
+        # The code stores "CV IAT" in each dictionary entry
+        cv_iat_values = [entry.get("CV IAT", 0) for entry in self.data]
 
-        if not any(cv_counts):  # If all values are zero, display a message
-            self.display_no_data_message("No CV Data Available", "CV Count per PCAP")
+        if not any(cv_iat_values):
+            self.display_no_data_message("No CV IAT Data Available", "CV IAT per PCAP")
             return
 
         self.plot_bar_chart(
             x_labels=pcap_files,
-            values=cv_counts,
-            ylabel="Coefficient of Variation (CV)",
-            title="CV Count per PCAP"
+            values=cv_iat_values,
+            ylabel="Coefficient of Variation (IAT)",
+            title="CV IAT per PCAP"
         )
+
+    # =====================================
+    # HELPER FUNCTIONS
+    # =====================================
 
     def display_no_data_message(self, message, title):
         """Displays a no-data message when there is no data to plot."""
@@ -455,7 +360,6 @@ class Graph(tk.Toplevel):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_title(title)
-
         self.display_graph(fig)
 
     def add_draggable_legend(self, ax, pcap_colors=None, unique_pcaps=None):
@@ -468,11 +372,10 @@ class Graph(tk.Toplevel):
         legend.set_draggable(True)
 
     def plot_bar_chart(self, x_labels, values, ylabel, title):
-        """Generalized bar graph using tab10 colors with black borders and label-based checkboxes grouped by type."""
+        """Generalized bar graph using distinct colors with black borders and label-based checkboxes."""
         if self.canvas:
             self.canvas.get_tk_widget().destroy()
 
-        # ✅ Destroy existing control frame if it exists
         if hasattr(self, "checkbox_frame") and self.checkbox_frame:
             self.checkbox_frame.destroy()
             self.checkbox_frame = None
@@ -482,7 +385,7 @@ class Graph(tk.Toplevel):
         bars = ax.bar(
             x_labels, values,
             color=[self.get_pcap_color(pcap) for pcap in x_labels],
-            edgecolor='black'  # ✅ Black border for clarity
+            edgecolor='black'
         )
 
         ax.set_xlabel("PCAP File")
@@ -493,14 +396,13 @@ class Graph(tk.Toplevel):
         self.add_draggable_legend(ax)
         self.display_graph(fig)
 
-        # ✅ Create label-based checkboxes for visibility control
+        # Create label-based checkboxes for visibility control
         self.checkbox_frame = tk.Frame(self.graph_frame, bg="white", relief=tk.RIDGE, bd=2)
         self.checkbox_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=5)
 
         tk.Label(self.checkbox_frame, text="Toggle Visibility by Type:", bg="white", font=("Arial", 10, "bold")).pack(
             side=tk.LEFT, padx=5)
 
-        # ✅ Label Mapping Logic (Ensuring Firefox Spotify is Spotify, etc.)
         def get_label_group(pcap_name):
             """Returns the appropriate group for a given PCAP file."""
             pcap_name = pcap_name.lower()
@@ -519,23 +421,19 @@ class Graph(tk.Toplevel):
             return "default"
 
         grouped_bars = {}
-
-        # ✅ Map labels to corresponding bars
         for pcap, bar in zip(x_labels, bars):
             label_group = get_label_group(pcap)
-
             if label_group not in grouped_bars:
                 grouped_bars[label_group] = []
             grouped_bars[label_group].append(bar)
 
-        # ✅ Create checkboxes for each label type
         self.label_visibility = {}
 
         def toggle_visibility():
             """ Toggle visibility based on label checkboxes."""
-            for label_group, bars in grouped_bars.items():
+            for label_group, bars_list in grouped_bars.items():
                 visible = self.label_visibility[label_group].get()
-                for bar in bars:
+                for bar in bars_list:
                     bar.set_visible(visible)
             fig.canvas.draw_idle()
 
@@ -551,7 +449,6 @@ class Graph(tk.Toplevel):
         if self.canvas:
             self.canvas.get_tk_widget().destroy()
 
-        # ✅ Destroy existing control frame if it exists
         if hasattr(self, "checkbox_frame") and self.checkbox_frame:
             self.checkbox_frame.destroy()
             self.checkbox_frame = None
@@ -571,23 +468,21 @@ class Graph(tk.Toplevel):
         categories = sorted(set(cat for pcap in category_per_pcap.values() for cat in pcap))
         unique_pcaps = sorted(category_per_pcap.keys())
 
-        # ✅ Ensure distinct colors
         color_map = get_distinct_color_map(unique_pcaps)
 
-        # ✅ Dynamically adjust x-axis spacing
         num_categories = len(categories)
         num_pcaps = len(unique_pcaps)
-        x = np.arange(num_categories)  # X-axis positions
-        width = 0.8 / num_pcaps  # ✅ Adjust width to prevent overlap
+        x = np.arange(num_categories)
+        width = 0.8 / num_pcaps
 
         bars_dict = {}
 
         for i, (pcap_file, category_counts) in enumerate(category_per_pcap.items()):
             y = [category_counts.get(category, 0) for category in categories]
-            bar_color = color_map.get(pcap_file, "gray")  # ✅ Unique colors
+            bar_color = color_map.get(pcap_file, "gray")
 
             bars_dict[pcap_file] = ax.bar(
-                x + (i - num_pcaps / 2) * width,  # ✅ Offset bars to prevent stacking
+                x + (i - num_pcaps / 2) * width,
                 y,
                 width=width,
                 label=pcap_file,
@@ -607,7 +502,6 @@ class Graph(tk.Toplevel):
 
         self.display_graph(fig)
 
-        # ✅ Create checkboxes for toggling visibility by PCAP
         self.checkbox_frame = tk.Frame(self.graph_frame, bg="white", relief=tk.RIDGE, bd=2)
         self.checkbox_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=5)
 
@@ -640,28 +534,25 @@ class Graph(tk.Toplevel):
 
     def create_control_frame(self, title, check_options=None, check_callback=None, radio_options=None,
                              radio_callback=None):
-        """Creates a Tkinter frame below the graph with checkboxes and radio buttons (if provided)."""
+        """Creates a Tkinter frame below the graph with checkboxes and/or radio buttons (if provided)."""
 
-        print(f"Creating control frame: {title}")  # ✅ Debugging Statement
-
-        # ✅ Destroy old frame before creating a new one
+        # Destroy old frame before creating a new one
         if hasattr(self, "checkbox_frame") and self.checkbox_frame:
             self.checkbox_frame.destroy()
 
-        # ✅ Attach control frame to `self.graph_frame` instead of `self.master`
         self.checkbox_frame = tk.Frame(self.graph_frame, bg="white")
         self.checkbox_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=5)
 
         tk.Label(self.checkbox_frame, text=title, font=("Arial", 10, "bold"), bg="white").pack()
 
-        self.check_vars = {}  # ✅ Store BooleanVars for checkboxes
-        if not hasattr(self, "radio_var"):  # ✅ Ensure `radio_var` exists
+        self.check_vars = {}
+        if not hasattr(self, "radio_var"):
             self.radio_var = tk.StringVar()
 
         control_wrapper = tk.Frame(self.checkbox_frame, bg="white")
         control_wrapper.pack(fill=tk.X)
 
-        # ✅ Radio Button Section (Horizontal Layout)
+        # Radio Button Section
         if radio_options:
             if not self.radio_var.get():
                 self.radio_var.set(radio_options[0])
@@ -669,10 +560,9 @@ class Graph(tk.Toplevel):
             radio_frame = tk.Frame(control_wrapper, bg="white")
             radio_frame.grid(row=0, column=0, sticky="w", padx=5)
 
-            tk.Label(radio_frame, text="Select Option:", font=("Arial", 9, "bold"), bg="white").grid(row=0, column=0,
-                                                                                                     sticky="w")
+            tk.Label(radio_frame, text="Select Option:", font=("Arial", 9, "bold"), bg="white").grid(row=0, column=0, sticky="w")
 
-            max_columns = 5  # ✅ Adjust column limit before wrapping
+            max_columns = 5
             row, col = 1, 0
 
             for option in radio_options:
@@ -680,18 +570,16 @@ class Graph(tk.Toplevel):
                                     command=radio_callback, bg="white", anchor="w", wraplength=150)
                 rb.grid(row=row, column=col, padx=5, pady=2, sticky="w")
                 col += 1
-                if col >= max_columns:  # ✅ Move to next row if column limit reached
+                if col >= max_columns:
                     col = 0
                     row += 1
 
-        # ✅ Checkbox Section (Wraps automatically)
+        # Checkbox Section
         if check_options:
             check_frame = tk.Frame(control_wrapper, bg="white")
             check_frame.grid(row=1, column=0, sticky="w", padx=5)
 
-            tk.Label(check_frame, text="Toggle Visibility:", font=("Arial", 9, "bold"), bg="white").grid(row=0,
-                                                                                                         column=0,
-                                                                                                         sticky="w")
+            tk.Label(check_frame, text="Toggle Visibility:", font=("Arial", 9, "bold"), bg="white").grid(row=0, column=0, sticky="w")
 
             max_columns = 5
             row, col = 1, 0
@@ -700,8 +588,8 @@ class Graph(tk.Toplevel):
                 var = tk.BooleanVar(value=True)
                 self.check_vars[option] = var
 
-                cb = tk.Checkbutton(check_frame, text=option, variable=var, command=check_callback, bg="white",
-                                    anchor="w", wraplength=150)
+                cb = tk.Checkbutton(check_frame, text=option, variable=var,
+                                    command=check_callback, bg="white", anchor="w", wraplength=150)
                 cb.grid(row=row, column=col, padx=5, pady=2, sticky="w")
                 col += 1
                 if col >= max_columns:
@@ -710,16 +598,11 @@ class Graph(tk.Toplevel):
 
     def get_pcap_color(self, pcap_file):
         """Returns the color for a PCAP file based on predefined rules."""
-        # Convert filename to lowercase for case-insensitive matching
         pcap_file = pcap_file.lower()
-
-        # ✅ Priority Rule: If 'youtube' or 'spotify' are present, they override everything else
         if "youtube" in pcap_file:
             return self.color_map["youtube"]
         if "spotify" in pcap_file:
             return self.color_map["spotify"]
-
-        # ✅ Otherwise, assign the color based on Chrome, Firefox, Edge, or Zoom
         if "chrome" in pcap_file:
             return self.color_map["chrome"]
         if "firefox" in pcap_file:
@@ -728,9 +611,9 @@ class Graph(tk.Toplevel):
             return self.color_map["edge"]
         if "zoom" in pcap_file:
             return self.color_map["zoom"]
-
-        # ✅ Default color if no label matches
         return self.color_map["default"]
+
+
 def generate_extra_colors(n):
     """Generate additional distinct colors using HSV if more colors are needed."""
     return [colorsys.hsv_to_rgb(i / n, 0.8, 0.9) for i in range(n)]
@@ -738,13 +621,12 @@ def generate_extra_colors(n):
 
 def get_distinct_color_map(unique_pcaps):
     """Assigns distinct colors to each PCAP without repeating."""
-    tableau_colors = list(TABLEAU_COLORS.values())  # Get default Tableau colors
+    tableau_colors = list(TABLEAU_COLORS.values())
     num_pcaps = len(unique_pcaps)
 
     if num_pcaps <= len(tableau_colors):
         return {pcap: tableau_colors[i] for i, pcap in enumerate(unique_pcaps)}
 
-    # ✅ If more colors are needed, generate extras
     extra_colors = generate_extra_colors(num_pcaps - len(tableau_colors))
     all_colors = tableau_colors + extra_colors
 

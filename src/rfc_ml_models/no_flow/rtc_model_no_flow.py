@@ -1,81 +1,92 @@
-import re
 import os
+import re
 import pickle
-import pandas as pd
-import numpy as np
 import asyncio
 import pyshark
+import numpy as np
+import pandas as pd
+
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.preprocessing import MinMaxScaler
-from src.rfc_ml_models.with_flow.rfc_model_with_flow import print_confusion_matrix
 
-# Get the absolute path of the current script
+############################
+#    CONFUSION MATRIX
+############################
+def print_confusion_matrix(y_true, y_pred, class_labels):
+    """Displays confusion matrix + classification report."""
+    cm = confusion_matrix(y_true, y_pred, labels=class_labels)
+    print("\nConfusion Matrix:")
+    print(pd.DataFrame(cm, index=class_labels, columns=class_labels))
+
+    print("\nClassification Report:")
+    print(classification_report(y_true, y_pred, labels=class_labels))
+
+    # Simple Heatmap with matplotlib
+    plt.figure(figsize=(8, 6))
+    plt.imshow(cm, cmap="Blues", interpolation="nearest")
+    plt.colorbar()
+    tick_marks = np.arange(len(class_labels))
+    plt.xticks(tick_marks, class_labels, rotation=45)
+    plt.yticks(tick_marks, class_labels)
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.title("Confusion Matrix")
+    for i in range(len(class_labels)):
+        for j in range(len(class_labels)):
+            plt.text(j, i, cm[i, j], ha="center", va="center", color="red")
+    plt.tight_layout()
+    # plt.show()
+
+############################
+#  Paths for model & scaler
+############################
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Define paths for model, scaler, etc.
 model_path = os.path.join(BASE_DIR, "model_no_flow.pkl")
 scaler_path = os.path.join(BASE_DIR, "scaler_no_flow.pkl")
 
 ########################################################################
-# ✨ EXPANDED FEATURE SELECTION FOR BETTER CLASSIFICATION
+#  FEATURE SELECTION
+#    (Derived *only* from sizes & timestamps)
 ########################################################################
-FEATURE_SELECTION = [ "flow_duration",              # (1) Flow duration
-    "avg_ps",
+FEATURE_SELECTION = [
     "avg_iat",
     "std_ps",
-    "std_iat",
+    "avg_ps"
 
 ]
 
 ############################
 #       HELPER FUNCTIONS
 ############################
-
-def compute_burstiness(timestamps):
-    """Coefficient of Variation (std / mean) for Inter-Arrival Times."""
+def compute_cv_iat(timestamps):
+    """
+    Coefficient of Variation for IAT = std(iat) / mean(iat).
+    """
     if len(timestamps) < 2:
         return 0.0
     iats = np.diff(sorted(timestamps))
     mean_iat = np.mean(iats)
     std_iat = np.std(iats, ddof=1)
-    return std_iat / mean_iat if mean_iat != 0 else 0.0
+    return (std_iat / mean_iat) if mean_iat != 0 else 0.0
 
-def compute_iat_stats(timestamps):
-    """Returns (min, avg, max) of IAT."""
-    if len(timestamps) < 2:
-        return (0.0, 0.0, 0.0)
-    iats = np.diff(sorted(timestamps))
-    return (np.min(iats), np.mean(iats), np.max(iats))
-
-def compute_ps_skewness_kurtosis(packet_sizes):
-    """Skew and kurtosis of packet-size distribution."""
-    if len(packet_sizes) < 3:
-        return (0.0, 0.0)
-    s = pd.Series(packet_sizes)
-    return (float(s.skew()), float(s.kurtosis()))
-
-def compute_estimated_direction_ratio(packet_sizes):
+def compute_cv_ps(packet_sizes):
     """
-    Heuristic ratio of 'large' to 'small' packets.
-    Large => likely inbound, small => likely outbound.
+    Coefficient of Variation for packet sizes = std_ps / avg_ps.
     """
     if len(packet_sizes) < 2:
-        return 0.5
-    large_packets = sum(1 for p in packet_sizes if p > 1000)
-    small_packets = sum(1 for p in packet_sizes if p <= 300)
-    denom = (large_packets + small_packets)
-    if denom == 0:
-        return 0.5
-    return large_packets / denom
+        return 0.0
+    mean_ps = np.mean(packet_sizes)
+    std_ps = np.std(packet_sizes, ddof=1)
+    return (std_ps / mean_ps) if mean_ps != 0 else 0.0
 
 ############################
-#   FEATURE EXTRACTION (INFERENCE)
+#  FEATURE EXTRACTION (INFERENCE)
 ############################
-
 def extract_features_from_pcap(pcap_file):
-    """Extracts relevant features from a PCAP file for *inference*."""
+    """Extracts features from a single PCAP file for inference."""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     cap = pyshark.FileCapture(pcap_file, display_filter="ip")
@@ -90,71 +101,63 @@ def extract_features_from_pcap(pcap_file):
                 timestamps.append(float(pkt.sniff_time.timestamp()))
         except:
             continue
-
     cap.close()
 
     if len(packet_sizes) < 2:
         return None
 
-    # Basic stats
-    total_packets = len(packet_sizes)
-    total_bytes = np.sum(packet_sizes)
-    flow_start = np.min(timestamps)
-    flow_end = np.max(timestamps)
-    flow_duration = flow_end - flow_start if flow_end > flow_start else 0.0
+    # Sort timestamps to compute overall duration
+    sorted_ts = sorted(timestamps)
+    flow_start = sorted_ts[0]
+    flow_end   = sorted_ts[-1]
+    duration   = flow_end - flow_start if flow_end > flow_start else 0.0
 
-    # Packet size stats
+    # Packet-size stats
     avg_ps = np.mean(packet_sizes)
-    std_ps = np.std(packet_sizes, ddof=1) if total_packets > 1 else 0.0
-    skew_ps, kurt_ps = compute_ps_skewness_kurtosis(packet_sizes)
+    std_ps = np.std(packet_sizes, ddof=1)
+    cv_ps = compute_cv_ps(packet_sizes)
 
-    # IAT stats
-    iats = np.diff(sorted(timestamps)) if total_packets > 1 else []
+    # Inter-Arrival Times (IAT)
+    iats = np.diff(sorted_ts)
     avg_iat = np.mean(iats) if len(iats) else 0.0
     std_iat = np.std(iats, ddof=1) if len(iats) > 1 else 0.0
-    burstiness_factor = compute_burstiness(timestamps)
+    cv_iat = compute_cv_iat(timestamps)
 
-    # Packet Rate
-    packets_per_second = total_packets / flow_duration if flow_duration > 0 else 0.0
+    # Packets per second
+    total_packets = len(packet_sizes)
+    packets_per_second = total_packets / duration if duration > 0 else 0.0
 
-    # Direction ratio
-    direction_ratio = compute_estimated_direction_ratio(packet_sizes)
-
-    # Collect & filter for final
+    # Gather all possible features
     all_features = {
-        "flow_duration": flow_duration,
-        "total_packets": total_packets,
-        "total_bytes": total_bytes,
         "avg_ps": avg_ps,
         "std_ps": std_ps,
-        "skew_ps": skew_ps,
-        "kurt_ps": kurt_ps,
+        "cv_ps": cv_ps,
         "avg_iat": avg_iat,
         "std_iat": std_iat,
-        "burstiness_factor": burstiness_factor,
+        "cv_iat": cv_iat,
         "packets_per_second": packets_per_second,
-        "direction_ratio": direction_ratio,
     }
-    selected = {k: v for k, v in all_features.items() if k in FEATURE_SELECTION}
 
+    # Only keep the features we specified
+    selected = {k: v for k, v in all_features.items() if k in FEATURE_SELECTION}
     if not selected:
         return None
 
     return pd.DataFrame([selected])
 
 ############################
-#   FEATURE BUILDING (TRAINING)
+#  HELPER FOR TRAINING
 ############################
-
 def extract_app_name(filename):
-    """Extracts the app name from the PCAP filename (e.g. 'zoom' from 'zoom1.pcap')."""
+    """Extracts app name from the PCAP filename (e.g. 'zoom' from 'zoom1.pcap')."""
     match = re.match(r"([a-zA-Z]+)", filename)
     return match.group(1) if match else "unknown"
 
 def build_features_for_each_pcap(csv_file):
     """
-    Reads a CSV of aggregated PCAP info,
-    computes per-PCAP stats, returns a DataFrame ready for training.
+    Reads a CSV (with "Pcap file", "Packet Size", "Timestamp"),
+    groups by "Pcap file", and computes stats. Each group corresponds
+    to one PCAP's data. We then form a single row of derived features.
     """
     df = pd.read_csv(csv_file)
     grouped = df.groupby("Pcap file")
@@ -163,67 +166,52 @@ def build_features_for_each_pcap(csv_file):
     for pcap_file, group in grouped:
         packet_sizes = group["Packet Size"].tolist()
         timestamps = group["Timestamp"].tolist()
-
-        # Skip if insufficient data
         if len(packet_sizes) < 2:
             continue
 
-        total_packets = len(packet_sizes)
-        total_bytes = np.sum(packet_sizes)
-        flow_start = np.min(timestamps)
-        flow_end = np.max(timestamps)
-        flow_duration = flow_end - flow_start if flow_end > flow_start else 0.0
+        sorted_ts = sorted(timestamps)
+        flow_start = sorted_ts[0]
+        flow_end   = sorted_ts[-1]
+        duration   = flow_end - flow_start if flow_end > flow_start else 0.0
 
-        # Packet sizes
+        # Stats
         avg_ps = np.mean(packet_sizes)
-        std_ps = np.std(packet_sizes, ddof=1) if total_packets > 1 else 0.0
-        skew_ps, kurt_ps = compute_ps_skewness_kurtosis(packet_sizes)
+        std_ps = np.std(packet_sizes, ddof=1)
+        cv_ps = compute_cv_ps(packet_sizes)
 
-        # IAT stats
-        iats = np.diff(sorted(timestamps)) if total_packets > 1 else []
+        iats = np.diff(sorted_ts)
         avg_iat = np.mean(iats) if len(iats) else 0.0
         std_iat = np.std(iats, ddof=1) if len(iats) > 1 else 0.0
-        burstiness_factor = compute_burstiness(timestamps)
+        cv_iat = compute_cv_iat(timestamps)
 
-        # Packets per second
-        packets_per_second = total_packets / flow_duration if flow_duration > 0 else 0.0
-
-        # Direction ratio
-        direction_ratio = compute_estimated_direction_ratio(packet_sizes)
+        packets_per_second = (len(packet_sizes)/duration) if duration > 0 else 0.0
 
         all_features = {
-            "flow_duration": flow_duration,
-            "total_packets": total_packets,
-            "total_bytes": total_bytes,
             "avg_ps": avg_ps,
             "std_ps": std_ps,
-            "skew_ps": skew_ps,
-            "kurt_ps": kurt_ps,
+            "cv_ps": cv_ps,
             "avg_iat": avg_iat,
             "std_iat": std_iat,
-            "burstiness_factor": burstiness_factor,
+            "cv_iat": cv_iat,
             "packets_per_second": packets_per_second,
-            "direction_ratio": direction_ratio,
         }
 
-        # Keep only what we want
         selected = {k: v for k, v in all_features.items() if k in FEATURE_SELECTION}
 
-        row = {
+        row_dict = {
             "Pcap file": pcap_file,
-            "app_name": extract_app_name(pcap_file)
+            "app_name": extract_app_name(pcap_file),
         }
-        row.update(selected)
-        rows.append(row)
+        row_dict.update(selected)
+        rows.append(row_dict)
 
     return pd.DataFrame(rows)
 
 ############################
-#       MODEL TRAINING
+#    MODEL TRAINING
 ############################
-
 def predict_traffic(files):
-    """Loads model & scaler, extracts features, returns predicted app names."""
+    """Loads model & scaler; extracts features from each PCAP; returns predicted labels."""
     if not os.path.exists(model_path) or not os.path.exists(scaler_path):
         print("❌ Model or Scaler file missing. Train the model first.")
         return []
@@ -239,15 +227,18 @@ def predict_traffic(files):
             results.append("Unknown")
             continue
 
-        df_features = df_features[FEATURE_SELECTION]
-        X_scaled = scaler.transform(df_features)
+        X = df_features[FEATURE_SELECTION]
+        X_scaled = scaler.transform(X)
         pred_label = model.predict(X_scaled)[0]
         results.append(pred_label)
 
     return results
 
 def main(csv_file=os.path.join(os.getcwd(), "..", "..", "training_set", "pcap_features.csv")):
-    """Train a RandomForest model with an expanded feature set + class weighting."""
+    """
+    Reads CSV, computes features (derived strictly from packet sizes & timestamps),
+    and trains a RandomForest model.
+    """
     df_features = build_features_for_each_pcap(csv_file)
     if df_features.empty:
         print("❌ No valid data to train on.")
@@ -256,32 +247,25 @@ def main(csv_file=os.path.join(os.getcwd(), "..", "..", "training_set", "pcap_fe
     X = df_features[FEATURE_SELECTION]
     y = df_features["app_name"]
 
-    # Train-Test Split
+    # Train/Test Split
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    # Scale
+    # Scale features
     scaler = MinMaxScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # Define a hyperparameter grid
+    # RandomForest + GridSearch
     param_grid = {
-        "n_estimators": [100, 200, 300],
-        "max_depth": [None, 20, 40],
-        "max_features": ["sqrt", "log2"],
+        "n_estimators": [100, 200],
+        "max_depth": [None, 20],
+        "max_features": ["sqrt", "log2"]
     }
-
-    # Include class_weight to fix potential misclassification for smaller classes
     rfc = RandomForestClassifier(random_state=42, class_weight="balanced_subsample")
-
     grid_search = GridSearchCV(
-        rfc,
-        param_grid,
-        cv=5,
-        scoring="accuracy",
-        n_jobs=-1
+        rfc, param_grid, cv=3, scoring="accuracy", n_jobs=-1
     )
     grid_search.fit(X_train_scaled, y_train)
 
@@ -290,31 +274,30 @@ def main(csv_file=os.path.join(os.getcwd(), "..", "..", "training_set", "pcap_fe
     for param, value in grid_search.best_params_.items():
         print(f" - {param}: {value}")
 
-    # Evaluate
+    # Accuracy
     train_acc = accuracy_score(y_train, best_rfc.predict(X_train_scaled)) * 100
     test_acc = accuracy_score(y_test, best_rfc.predict(X_test_scaled)) * 100
-
     print(f"✅ Train Accuracy: {train_acc:.2f}%")
     print(f"✅ Test Accuracy:  {test_acc:.2f}%")
 
-    # Feature Importance
-    importance_pairs = sorted(
+    # Feature importances
+    feats_and_importance = sorted(
         zip(FEATURE_SELECTION, best_rfc.feature_importances_),
-        key=lambda x: x[1],
-        reverse=True
+        key=lambda x: x[1], reverse=True
     )
     print("\n🔹 Feature Importance Ranking:")
-    for feat, imp in importance_pairs:
+    for feat, imp in feats_and_importance:
         print(f"{feat}: {imp:.4f}")
 
     # Confusion Matrix
-    print_confusion_matrix(y_test, best_rfc.predict(X_test_scaled), sorted(y.unique()))
+    unique_labels = sorted(y.unique())
+    y_pred = best_rfc.predict(X_test_scaled)
+    print_confusion_matrix(y_test, y_pred, unique_labels)
 
-    # Save
-    with open(model_path, "wb") as model_file, open(scaler_path, "wb") as scaler_file:
-        pickle.dump(best_rfc, model_file)
-        pickle.dump(scaler, scaler_file)
-
+    # Save model + scaler
+    with open(model_path, "wb") as mf, open(scaler_path, "wb") as sf:
+        pickle.dump(best_rfc, mf)
+        pickle.dump(scaler, sf)
     print("✅ Model and Scaler saved.")
 
 if __name__ == "__main__":

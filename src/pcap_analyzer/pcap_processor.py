@@ -158,7 +158,6 @@ class PcapProcessor:
             flow_hash = self.compute_flow_hash(*flow_key[:4])  # שימוש בארבעת הרכיבים של ה-Flow
             flow_hashes[flow_hash] += 1
 
-
         total_backward = sum(flow["backward"] for flow in flows.values())
         total_forward = sum(flow["forward"] for flow in flows.values())
         flow_directionality_ratio = round(total_forward / total_backward, 3) if total_backward > 0 else total_forward
