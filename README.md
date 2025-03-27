@@ -69,13 +69,14 @@ This project provides tools to analyze network traffic captured in PCAP files an
 
 ### Model Features
 
-- **Scenario 1 (Flow-Based):**
+- **Scenario 1 (Packet sizes, timestamps and Flow-Based):**
   - Attacker obtains packet sizes, timestamps, and hashes of the 4-tuple flow ID.
-  - Features include flow size, flow volume, packet inter-arrival times, and flow directionality ratio.
+  - Features used for classification: Coefficient of variance of Inter Arrival Times, Standard deviation of Packet Sizes,
+    Count of Unique Flows and the Standard Deviation of the Standard Deviations of Packet Sizes across Different Flows
 
-- **Scenario 2 (No-Flow):**
+- **Scenario 2 (Only Packet sizes and timestamps):**
   - Attacker obtains only packet sizes and timestamps.
-  - Features include average packet size, average IAT, and packet throughput.
+  - Features used for classification: Average Inter arrival times, Average Packet size, Standard deviation of packet sizes.
     
 ## 🔥Special Features
   - All the visual representation of the data updates dynamically upon loading of pcaps (dataframe,graphs and predictions).
