@@ -84,6 +84,11 @@ This project provides tools to analyze network traffic captured in PCAP files an
   - All the visual representation of the data updates dynamically upon loading of pcaps (dataframe,graphs and predictions).
   - All graphs have check/radio buttons to ensure comfortable comparison of the different traffics.
 
+## 🔥Troubleshooting
+  - Given the dynamic nature of the gui, sometimes restarting the main py, will make the program run smoother due to delayed callback etc..
+ 
+
+
 ## 📍 Authors
 - Aviv Neeman (GitHub owner) – [anksilae@gmail.com](mailto:anksilae@gmail.com)
 - Noa Shalom
