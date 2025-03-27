@@ -1,13 +1,15 @@
 # PCAP Analyzer – Communication Networks Final Project
 
 ## 📌 Overview
-This project provides tools to analyze network traffic captured in PCAP files and employs Machine Learning (ML) models to classify encrypted internet traffic. It focuses on extracting critical traffic features, visualizing them, and predicting the application generating the traffic.
+This project provides tools to analyze network traffic captured in PCAP files and employs Machine Learning (ML) models to classify encrypted internet traffic. It focuses on extracting critical traffic features of 
+app usage classification, visualizing them, and predicting the application generating the traffic.
 
 ## 🚀 Features
 
 ### Main Functionalities:
 - **PCAP File Analysis:**
-  - Accepts `.pcap` and `.pcapng` files.
+  -"Load Pcap" button
+  --Accepts `.pcap` and `.pcapng` files.
   - Extracts features including:
     - Flow size (total packets per flow)
     - Flow volume (total bytes per flow)
