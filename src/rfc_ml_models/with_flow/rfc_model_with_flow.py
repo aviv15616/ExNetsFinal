@@ -1,18 +1,18 @@
-import os  # For interacting with the operating system (paths, directories, etc.)
-import pickle  # For serializing and deserializing Python objects (model persistence)
-import pandas as pd  # For data manipulation and analysis (CSV operations, DataFrames)
-import numpy as np  # For numerical computations and array manipulations
-import asyncio  # For asynchronous event loop management
-import hashlib  # For generating hash values (used for flow identification)
-import pyshark  # For capturing and parsing PCAP files
-import re  # For regular expression matching
-import matplotlib.pyplot as plt  # For creating plots and visualizations
-import seaborn as sns  # For enhanced statistical data visualizations (e.g., heatmaps)
-from collections import Counter, defaultdict  # For counting elements and grouping data
-from sklearn.model_selection import train_test_split, GridSearchCV  # For splitting data and hyperparameter tuning
-from sklearn.ensemble import RandomForestClassifier  # RandomForest classifier for machine learning
-from sklearn.metrics import accuracy_score, confusion_matrix  # For evaluating model performance
-from sklearn.preprocessing import MinMaxScaler  # For scaling features to a specific range
+import os 
+import pickle 
+import pandas as pd 
+import numpy as np  
+import asyncio 
+import hashlib 
+import pyshark  
+import re  
+import matplotlib.pyplot as plt
+import seaborn as sns 
+from collections import Counter, defaultdict 
+from sklearn.model_selection import train_test_split, GridSearchCV 
+from sklearn.ensemble import RandomForestClassifier  
+from sklearn.metrics import accuracy_score, confusion_matrix 
+from sklearn.preprocessing import MinMaxScaler  
 
 # Get the absolute path of the current script directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
