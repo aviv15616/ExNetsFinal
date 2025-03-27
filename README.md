@@ -54,11 +54,11 @@ This project provides tools to analyze network traffic captured in PCAP files an
 ### How to run
 1. Clone the repository:
    ```sh
-   git clone <repository_url>
+   git clone https://github.com/aviv15616/ExNetsFinal.git
    ```
 2. Navigate to the project directory:
    ```sh
-   cd <repository_name>
+   cd ExNetsFinal
    ```
 3. Install dependencies:
    ```sh
