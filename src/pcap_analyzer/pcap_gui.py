@@ -1,17 +1,16 @@
-# Import necessary modules for GUI, file operations, threading, plotting, and ML predictions.
-import tkinter as tk  # Tkinter for GUI elements
-from tkinter import filedialog, messagebox, ttk, Label  # Submodules for file dialogs, message boxes, tree views, and labels
-import os  # Module for operating system interactions (e.g., file paths)
-import threading  # Module to allow parallel execution via threads
-import matplotlib.pyplot as plt  # Matplotlib for plotting graphs
-import seaborn as sns  # Seaborn for creating statistical plots like heatmaps
-from sklearn.metrics import confusion_matrix  # Function to compute confusion matrices for model evaluation
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # To embed Matplotlib figures in Tkinter
+import tkinter as tk  
+from tkinter import filedialog, messagebox, ttk, Label  
+import os 
+import threading 
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix  
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  
 
-# Import custom modules for data display, PCAP processing, and graphing
-from data_frame import DataFrameWindow  # Custom window for displaying data in a table format
-from pcap_processor import PcapProcessor  # Custom class to process PCAP files
-from graph import Graph  # Custom module for plotting graphs based on PCAP data
+
+from data_frame import DataFrameWindow  
+from pcap_processor import PcapProcessor  
+from graph import Graph  
 
 # Import prediction functions for two different ML models (with and without flow data)
 from src.rfc_ml_models.no_flow.rtc_model_no_flow import predict_traffic as predict_no_flow  # Prediction without flow data
