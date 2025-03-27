@@ -86,7 +86,7 @@ This project provides tools to analyze network traffic captured in PCAP files an
 ## 📌 Dataset Links
 - **Training Set:**
   - 25 PCAP files (10–30 seconds each) per traffic type (Chrome, Edge, YouTube, Spotify, Zoom). Only 15 per type were used for training.
-- **Validation Set:**
+- **Visual Analysis Set:**
   - 7 PCAP recordings per traffic type (each 3 minutes long for robust analysis) including SSL key files for HTTP analysis.
 
 [🔗 Access via Google Drive](https://drive.google.com/drive/folders/1_HTYFmh8jFF9BU6gwGZcF5H-YbXrWvgu?usp=drive_link)
