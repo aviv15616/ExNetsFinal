@@ -1,16 +1,16 @@
-import os  # Provides a portable way of using operating system dependent functionality
-import re  # Module for regular expression operations
-import pickle  # Module for serializing and de-serializing Python objects
-import asyncio  # Library to write concurrent code using the async/await syntax
-import pyshark  # Python wrapper for tshark to capture and analyze network traffic (PCAP files)
-import numpy as np  # Library for numerical operations and handling arrays
-import pandas as pd  # Library for data manipulation and analysis
+import os  
+import re 
+import pickle 
+import asyncio  
+import pyshark 
+import numpy as np 
+import pandas as pd
 
-import matplotlib.pyplot as plt  # Plotting library for creating static, animated, and interactive visualizations
-from sklearn.model_selection import train_test_split, GridSearchCV  # Utilities for splitting datasets and hyperparameter tuning
-from sklearn.ensemble import RandomForestClassifier  # Random Forest classification algorithm
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report  # Evaluation metrics for classification models
-from sklearn.preprocessing import MinMaxScaler  # Scaler to normalize features between a given range
+import matplotlib.pyplot as plt 
+from sklearn.model_selection import train_test_split, GridSearchCV  
+from sklearn.ensemble import RandomForestClassifier  
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report  
+from sklearn.preprocessing import MinMaxScaler  
 
 ############################
 #    CONFUSION MATRIX
