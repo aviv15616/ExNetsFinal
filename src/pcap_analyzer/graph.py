@@ -1,10 +1,10 @@
-import colorsys 
-import tkinter as tk 
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  
-from collections import Counter 
-import matplotlib.pyplot as plt 
-import numpy as np  
-from matplotlib.colors import TABLEAU_COLORS 
+import colorsys
+import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from collections import Counter
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.colors import TABLEAU_COLORS
 
 # Define the Graph class, which is a Tkinter Toplevel window that displays various plots
 class Graph(tk.Toplevel):

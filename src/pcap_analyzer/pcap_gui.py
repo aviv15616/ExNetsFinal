@@ -1,16 +1,16 @@
-import tkinter as tk  
-from tkinter import filedialog, messagebox, ttk, Label  
-import os 
-import threading 
+# Import necessary modules for GUI, file operations, threading, plotting, and ML predictions.
+import tkinter as tk
+from tkinter import filedialog, messagebox, ttk, Label  # Submodules for file dialogs, message boxes, tree views, and labels
+import os
+import threading
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import confusion_matrix  
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  
+from sklearn.metrics import confusion_matrix
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
-from data_frame import DataFrameWindow  
-from pcap_processor import PcapProcessor  
-from graph import Graph  
+from data_frame import DataFrameWindow
+from pcap_processor import PcapProcessor
+from graph import Graph
 
 # Import prediction functions for two different ML models (with and without flow data)
 from src.rfc_ml_models.no_flow.rtc_model_no_flow import predict_traffic as predict_no_flow  # Prediction without flow data
@@ -65,7 +65,11 @@ class PcapGUI:
         """
         # Open file dialog to select PCAP files; supports .pcap and .pcapng extensions.
         files = filedialog.askopenfilenames(
-            filetypes=[("PCAP Files", "*.pcap;*.pcapng"), ("All Files", "*.*")],
+            filetypes=[
+                ("PCAP Files", "*.pcap"),
+                ("PCAPNG Files", "*.pcapng"),
+                ("All Files", "*.*")  # Ensure visibility across OS
+            ],
             title="Select PCAP files"
         )
         # If any files are selected, process them in a background thread.
@@ -144,10 +148,13 @@ class PcapGUI:
 
         # Open a file dialog to select PCAP files for prediction using the chosen model.
         files = filedialog.askopenfilenames(
-            filetypes=[("PCAP Files", "*.pcap;*.pcapng"), ("All Files", "*.*")],
+            filetypes=[
+                ("PCAP Files", "*.pcap"),
+                ("PCAPNG Files", "*.pcapng"),
+                ("All Files", "*.*")  # Ensure visibility across OS
+            ],
             title=f"Select PCAP files for {model_name}"
         )
-
         # If files are selected, start processing predictions in a new thread.
         if files:
             threading.Thread(
@@ -386,7 +393,7 @@ class PcapGUI:
         # If there is no existing data window or it has been closed, create a new one.
         if not self.data_window or not self.data_window.winfo_exists():
             self.data_window = DataFrameWindow(self.root, [] if empty_init else self.processor.pcap_data)
-            self.data_window.state("zoomed")  # Maximize the window
+            self.data_window.state("normal")  # Maximize the window
         else:
             # If the window exists, update it with the current PCAP data and bring it to focus.
             self.data_window.update_data(self.processor.pcap_data)
@@ -404,7 +411,7 @@ class PcapGUI:
         # If the graph window doesn't exist or is closed, create a new one.
         if not self.graph_window or not self.graph_window.winfo_exists():
             self.graph_window = Graph(self.root, self.processor.pcap_data)
-            self.graph_window.state("zoomed")  # Maximize the window
+            self.graph_window.state("normal")  # Maximize the window
         else:
             # If the window exists, simply bring it into focus.
             self.graph_window.focus()
