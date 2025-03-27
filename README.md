@@ -76,6 +76,10 @@ This project provides tools to analyze network traffic captured in PCAP files an
 - **Scenario 2 (No-Flow):**
   - Attacker obtains only packet sizes and timestamps.
   - Features include average packet size, average IAT, and packet throughput.
+    
+## 🔥Special Features
+  - All the visual representation of the data updates dynamically upon loading of pcaps (dataframe,graphs and predictions).
+  - All graphs have check/radio buttons to ensure comfortable comparison of the different traffics.
 
 ## 📍 Authors
 - Aviv Neeman (GitHub owner) – [anksilae@gmail.com](mailto:anksilae@gmail.com)
