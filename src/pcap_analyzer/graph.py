@@ -430,13 +430,6 @@ class Graph(tk.Toplevel):
         legend.set_draggable(True)  # Make the legend draggable
 
     def plot_bar_chart(self, x_labels, values, ylabel, title):
-        """
-        Generalized bar chart plotting function with label-based checkboxes for toggling visibility.
-        :param x_labels: List of labels for the x-axis (typically PCAP file names).
-        :param values: Numerical values for the y-axis.
-        :param ylabel: Y-axis label.
-        :param title: Chart title.
-        """
         if self.canvas:
             self.canvas.get_tk_widget().destroy()
         if hasattr(self, "checkbox_frame") and self.checkbox_frame:
@@ -444,20 +437,21 @@ class Graph(tk.Toplevel):
             self.checkbox_frame = None
 
         fig, ax = plt.subplots(figsize=(8, 5))
-        # Create a bar chart with colors based on PCAP names and black borders
-        bars = ax.bar(
-            x_labels, values,
-            color=[self.get_pcap_color(pcap) for pcap in x_labels],
-            edgecolor='black'
-        )
+        # Create a bar for each x_label with a label
+        bars = []
+        for pcap, val in zip(x_labels, values):
+            bar = ax.bar(pcap, val, color=self.get_pcap_color(pcap), edgecolor='black', label=pcap)
+            bars.append(bar)
 
         ax.set_xlabel("PCAP File")
         ax.set_ylabel(ylabel)
         ax.set_title(title)
         ax.tick_params(axis='x', rotation=45)  # Rotate x-axis labels for better readability
 
-        self.add_draggable_legend(ax)  # Add a draggable legend to the plot
-        self.display_graph(fig)  # Display the plot in the GUI
+        # Pass labels and colors to add_draggable_legend
+        self.add_draggable_legend(ax, pcap_colors={pcap: self.get_pcap_color(pcap) for pcap in x_labels},
+                                  unique_pcaps=x_labels)
+        self.display_graph(fig)
 
         # Create a checkbox frame below the graph for toggling visibility by type
         self.checkbox_frame = tk.Frame(self.graph_frame, bg="white", relief=tk.RIDGE, bd=2)
