@@ -52,7 +52,7 @@ This project provides tools to analyze network traffic captured in PCAP files an
 - Dependencies: `pyshark`, `scikit-learn`, `matplotlib`, `pandas`, `numpy`, `seaborn`, `tkinter`
 
 ### How to run
-if running on linux, must run in full screen for full compatability
+if running on linux, recommended to run in full screen for full compatability
 
 1. Clone the repository:
    ```sh
