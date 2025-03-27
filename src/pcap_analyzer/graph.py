@@ -1,10 +1,10 @@
-import colorsys  # For converting between color systems (HSV to RGB)
-import tkinter as tk  # Tkinter for GUI elements
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # Embeds Matplotlib figures in Tkinter
-from collections import Counter  # For counting hashable objects (e.g., category counts)
-import matplotlib.pyplot as plt  # For creating plots and graphs
-import numpy as np  # For numerical operations and array manipulation
-from matplotlib.colors import TABLEAU_COLORS  # Predefined set of Tableau colors for plotting
+import colorsys 
+import tkinter as tk 
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  
+from collections import Counter 
+import matplotlib.pyplot as plt 
+import numpy as np  
+from matplotlib.colors import TABLEAU_COLORS 
 
 # Define the Graph class, which is a Tkinter Toplevel window that displays various plots
 class Graph(tk.Toplevel):
