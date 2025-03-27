@@ -95,9 +95,6 @@ This project provides tools to analyze network traffic captured in PCAP files an
 - Gil Aharon
 - Amnon Pozailov
 
-## 📌 Python Version
--This project requires Python 3.8 or later to ensure compatibility with all dependencies.
-
 ## 📌 Dataset Links
 - **Training Set:**
   - 25 PCAP files (10–30 seconds each) per traffic type (Chrome, Edge, YouTube, Spotify, Zoom). Only 15 per type were used for training.
