@@ -51,7 +51,7 @@ This project provides tools to analyze network traffic captured in PCAP files an
 - Python 3.8+
 - Dependencies: `pyshark`, `scikit-learn`, `matplotlib`, `pandas`, `numpy`, `seaborn`, `tkinter`
 
-### Steps
+### How to run
 1. Clone the repository:
    ```sh
    git clone <repository_url>
@@ -64,6 +64,8 @@ This project provides tools to analyze network traffic captured in PCAP files an
    ```sh
    pip install -r requirements.txt
    ```
+4. Run main.py
+5. Enjoy!
 
 ## 📊 Machine Learning Models
 
