@@ -42,6 +42,7 @@ This project provides tools to analyze network traffic captured in PCAP files an
     - HTTP Distribution (Bar Chart)
 
 - **ML Prediction:**
+- in order to see accuracy results file must be naned <appname><number> as the validation is based on existence of the label claasified in the filename
   - **Predict without Flow:** Classifies traffic using packet sizes and timestamps.
   - **Predict with Flow:** Classifies traffic using packet sizes, timestamps, and anonymous flow-based features.
 
